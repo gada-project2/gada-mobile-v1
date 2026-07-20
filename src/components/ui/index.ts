@@ -1,8 +1,12 @@
+export { Avatar } from "./Avatar";
 export { Button } from "./Button";
 export { Card } from "./Card";
+export { Chip } from "./Chip";
 export { ImageUpload } from "./ImageUpload";
+export { Input, SearchInput } from "./Input";
 export { Logo } from "./Logo";
 export { Pill } from "./Pill";
 export { Screen } from "./Screen";
+export { TabBarFab } from "./TabBarFab";
 export { Text } from "./Text";
 export { Wordmark } from "./Wordmark";
