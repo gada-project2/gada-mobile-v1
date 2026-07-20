@@ -7,12 +7,11 @@ import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
-  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Logo, Text } from "../../src/components/ui";
+import { Logo, SearchInput, Text } from "../../src/components/ui";
 import { CategoryChips } from "../../src/components/app/CategoryChips";
 import { EventCard } from "../../src/components/app/EventCard";
 import {
@@ -30,6 +29,7 @@ import { canConvene } from "../../src/lib/capabilities";
 import { useDeviceLocation } from "../../src/lib/location";
 import { useDebouncedValue } from "../../src/lib/useDebouncedValue";
 import { useDiscover, useTrending } from "../../src/lib/queries/gadarings";
+import { useTheme } from "../../src/theme/ThemeProvider";
 import { colors } from "../../src/theme/tokens";
 
 function dateRange(preset: DatePreset): { dateFrom?: string; dateTo?: string } {
@@ -47,6 +47,8 @@ function dateRange(preset: DatePreset): { dateFrom?: string; dateTo?: string } {
 }
 
 export default function Discover() {
+  const theme = useTheme();
+  const dark = theme.mode === "dark";
   const { user } = useAuth();
   const { coords, usingFallback, fallbackLabel, requestAgain } = useDeviceLocation();
 
@@ -120,14 +122,14 @@ export default function Discover() {
             </Text>
           </Pressable>
         ) : (
-          <Text tone="muted" className="text-sm">
+          <Text tone="muted" className="text-sm" style={dark ? { color: theme.text.secondary } : undefined}>
             Discover
           </Text>
         )}
       </View>
 
       <View className="gap-0.5">
-        <Text weight="semibold" className="text-2xl">
+        <Text weight="semibold" className="text-2xl" style={dark ? { color: theme.text.primary } : undefined}>
           Hi {greetingName} 👋
         </Text>
         <Pressable
@@ -135,70 +137,49 @@ export default function Discover() {
           accessibilityRole={usingFallback ? "button" : undefined}
           className="flex-row items-center gap-1"
         >
-          <Ionicons name="location-outline" size={14} color={colors.muted} />
-          <Text tone="muted" className="text-sm">
+          <Ionicons name="location-outline" size={14} color={dark ? theme.text.secondary : colors.muted} />
+          <Text tone="muted" className="text-sm" style={dark ? { color: theme.text.secondary } : undefined}>
             {usingFallback ? `Showing events near ${fallbackLabel}` : "Events near you"}
           </Text>
           {usingFallback ? (
-            <Text tone="brand-ink" weight="medium" className="text-sm">
+            <Text tone="brand-ink" weight="medium" className="text-sm" style={dark ? { color: theme.accent.primary } : undefined}>
               {"  "}Enable location
             </Text>
           ) : null}
         </Pressable>
       </View>
 
-      {/* Search + filters */}
-      <View className="flex-row items-center gap-2">
-        <View className="h-12 flex-1 flex-row items-center gap-2 rounded-md border border-hairline-strong bg-surface px-3">
-          <Ionicons name="search" size={18} color={colors.faint} />
-          <TextInput
-            value={searchInput}
-            onChangeText={setSearchInput}
-            placeholder="Search events"
-            placeholderTextColor={colors.faint}
-            returnKeyType="search"
-            className="h-full flex-1 font-sans text-base text-ink"
-          />
-          {searchInput.length > 0 ? (
-            <Pressable onPress={() => setSearchInput("")} hitSlop={8}>
-              <Ionicons name="close-circle" size={18} color={colors.faint} />
-            </Pressable>
-          ) : null}
-        </View>
-        <Pressable
-          onPress={() => filtersRef.current?.present()}
-          accessibilityRole="button"
-          accessibilityLabel="Filters"
-          className="h-12 flex-row items-center gap-1.5 rounded-md border border-hairline-strong bg-surface px-3"
-        >
-          <Ionicons name="options-outline" size={18} color={colors.ink} />
-          <Text weight="medium" className="text-sm">
-            Filters
-          </Text>
-          {isFiltered(filters) ? <View className="h-2 w-2 rounded-pill bg-brand" /> : null}
-        </Pressable>
-      </View>
+      {/* Search + filters — visual swap to the themed SearchInput; state wiring
+          (searchInput / filters sheet) is unchanged. */}
+      <SearchInput
+        value={searchInput}
+        onChangeText={setSearchInput}
+        placeholder="Search events, people or vendors..."
+        onFilterPress={() => filtersRef.current?.present()}
+        filterActive={isFiltered(filters)}
+      />
 
       <CategoryChips value={category} onChange={setCategory} />
 
       <TrendingCarousel
         events={trending.data ?? []}
         loading={trending.isLoading}
+        themed={dark}
       />
 
-      <Text weight="semibold" className="text-lg">
+      <Text weight="semibold" className="text-lg" style={dark ? { color: theme.text.primary } : undefined}>
         {search ? "Search results" : "Near you"}
       </Text>
     </View>
   );
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-page">
+    <SafeAreaView edges={["top"]} className="flex-1" style={{ backgroundColor: theme.background.primary }}>
       <View className="flex-1 px-5">
         <FlashList
           data={items}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <EventCard event={item} />}
+          renderItem={({ item }) => <EventCard event={item} themed={dark} />}
           ItemSeparatorComponent={() => <View className="h-4" />}
           ListHeaderComponent={header}
           showsVerticalScrollIndicator={false}
@@ -213,14 +194,14 @@ export default function Discover() {
             <RefreshControl
               refreshing={discover.isRefetching && !discover.isFetchingNextPage}
               onRefresh={() => discover.refetch()}
-              tintColor={colors.brand}
+              tintColor={dark ? theme.accent.primary : colors.brand}
             />
           }
           ListEmptyComponent={
             showInitialLoading ? (
-              <SkeletonList />
+              <SkeletonList themed={dark} />
             ) : showError ? (
-              <ErrorState onRetry={() => discover.refetch()} />
+              <ErrorState onRetry={() => discover.refetch()} themed={dark} />
             ) : (
               <EmptyState
                 title={search ? "No matches" : "No events found"}
@@ -229,13 +210,14 @@ export default function Discover() {
                     ? "No loaded events match your search. Try a different term."
                     : "Try a different category, widen the distance, or check back soon."
                 }
+                themed={dark}
               />
             )
           }
           ListFooterComponent={
             discover.isFetchingNextPage ? (
               <View className="py-6">
-                <ActivityIndicator color={colors.brand} />
+                <ActivityIndicator color={dark ? theme.accent.primary : colors.brand} />
               </View>
             ) : null
           }

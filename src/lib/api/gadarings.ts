@@ -51,6 +51,36 @@ export function getGadaring(id: string): Promise<Gadaring> {
   return apiFetch<Gadaring>(`/events/${id}`);
 }
 
+// ── Per-user interest (ONLY on event detail — the list endpoint carries no
+// per-user fields, confirmed against production). Backend: GET status,
+// POST to mark interested, DELETE to remove.
+
+/**
+ * Whether the current user has flagged interest in an event. Tolerant of the
+ * exact status shape (`{ interested }` / `{ isInterested }` / `{ status }` /
+ * a bare boolean) so a backend field rename doesn't silently break the badge.
+ */
+export async function getInterestStatus(id: string): Promise<boolean> {
+  const data = await apiFetch<
+    boolean | { interested?: boolean; isInterested?: boolean; status?: string } | null
+  >(`/events/${id}/interest/status`);
+  if (typeof data === "boolean") return data;
+  if (!data) return false;
+  return Boolean(
+    data.interested ??
+      data.isInterested ??
+      (typeof data.status === "string" && data.status.toUpperCase() === "INTERESTED"),
+  );
+}
+
+export function addInterest(id: string): Promise<unknown> {
+  return apiFetch(`/events/${id}/interest`, { method: "POST" });
+}
+
+export function removeInterest(id: string): Promise<unknown> {
+  return apiFetch(`/events/${id}/interest`, { method: "DELETE" });
+}
+
 export function getTickets(id: string): Promise<Ticket[]> {
   return apiFetch<Ticket[]>(`/events/${id}/tickets`);
 }

@@ -16,6 +16,7 @@ export const gadaringKeys = {
   sponsored: (filters: DiscoverFilters) =>
     ["gadarings", "sponsored", filters] as const,
   detail: (id: string) => ["gadarings", "detail", id] as const,
+  interest: (id: string) => ["gadarings", id, "interest"] as const,
   tickets: (id: string) => ["gadarings", id, "tickets"] as const,
   volunteerConfig: (id: string) => ["gadarings", id, "volunteer-config"] as const,
   pingPoints: (id: string) => ["gadarings", id, "ping-points"] as const,

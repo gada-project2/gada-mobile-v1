@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -17,7 +18,13 @@ import { categoryMeta } from "../../src/lib/categories";
 import { formatEventRange } from "../../src/lib/dates";
 import { goingCount, isLive } from "../../src/lib/gadaring-display";
 import { useResolvedMedia } from "../../src/lib/queries/storage";
-import { useGadaring, usePingPoints, useTickets } from "../../src/lib/queries/gadarings";
+import {
+  useGadaring,
+  useInterestStatus,
+  usePingPoints,
+  useTickets,
+  useToggleInterest,
+} from "../../src/lib/queries/gadarings";
 import { colors } from "../../src/theme/tokens";
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
@@ -54,6 +61,11 @@ export default function EventDetail() {
 
   const detail = useGadaring(id);
   const event = detail.data;
+
+  // Per-user interest — detail-only (the list carries no per-user fields).
+  const interest = useInterestStatus(id);
+  const toggleInterest = useToggleInterest(id);
+  const isInterested = interest.data ?? false;
 
   // Fetch a tab's data only once its tab is opened (cached thereafter).
   const tickets = useTickets(tab === "tickets" ? id : undefined);
@@ -134,6 +146,7 @@ export default function EventDetail() {
                 <Pill tone="brand" label="You're going" />
               )
             ) : null}
+            {isInterested ? <Pill tone="invited" label="Interested" /> : null}
           </View>
 
           <Text weight="semibold" className="text-2xl">
@@ -147,6 +160,32 @@ export default function EventDetail() {
             ) : null}
             <InfoRow icon="people-outline" text={`${going} going`} />
           </View>
+
+          {/* Interest toggle (real GET/POST/DELETE; detail-only per API). */}
+          {!cancelled ? (
+            <Pressable
+              onPress={() => {
+                Haptics.selectionAsync().catch(() => {});
+                toggleInterest.mutate(!isInterested);
+              }}
+              disabled={interest.isLoading || toggleInterest.isPending}
+              accessibilityRole="button"
+              accessibilityState={{ selected: isInterested, busy: toggleInterest.isPending }}
+              accessibilityLabel={isInterested ? "Remove interest" : "Mark as interested"}
+              className={`min-h-[44px] flex-row items-center justify-center gap-2 rounded-btn border px-5 py-3 ${
+                isInterested ? "border-invited bg-invited-tint" : "border-hairline-strong bg-surface"
+              } ${interest.isLoading || toggleInterest.isPending ? "opacity-60" : ""}`}
+            >
+              <Ionicons
+                name={isInterested ? "heart" : "heart-outline"}
+                size={18}
+                color={isInterested ? colors.invitedInk : colors.muted}
+              />
+              <Text weight="semibold" tone={isInterested ? "invited-ink" : "ink"}>
+                {isInterested ? "Interested" : "I'm interested"}
+              </Text>
+            </Pressable>
+          ) : null}
 
           {cancelled ? (
             <View className="rounded-md bg-coral-tint px-4 py-3">

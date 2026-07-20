@@ -1,12 +1,20 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import {
+  addInterest,
   getGadaring,
+  getInterestStatus,
   getPingPoints,
   getTickets,
   getTrending,
   getVolunteerConfig,
   listGadarings,
+  removeInterest,
   type DiscoverFilters,
 } from "../api/gadarings";
 import { gadaringKeys } from "./keys";
@@ -71,6 +79,35 @@ export function useTickets(id: string | undefined) {
     queryKey: gadaringKeys.tickets(id ?? ""),
     queryFn: () => getTickets(id as string),
     enabled: !!id,
+  });
+}
+
+/** Per-user interest status for an event (detail screen only — see api note). */
+export function useInterestStatus(id: string | undefined) {
+  return useQuery({
+    queryKey: gadaringKeys.interest(id ?? ""),
+    queryFn: () => getInterestStatus(id as string),
+    enabled: !!id,
+  });
+}
+
+/** Toggle interest (POST/DELETE), with an optimistic flip of the status cache. */
+export function useToggleInterest(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (next: boolean) => (next ? addInterest(id) : removeInterest(id)),
+    onMutate: async (next: boolean) => {
+      await qc.cancelQueries({ queryKey: gadaringKeys.interest(id) });
+      const prev = qc.getQueryData<boolean>(gadaringKeys.interest(id));
+      qc.setQueryData(gadaringKeys.interest(id), next);
+      return { prev };
+    },
+    onError: (_e, _next, ctx) => {
+      if (ctx) qc.setQueryData(gadaringKeys.interest(id), ctx.prev);
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: gadaringKeys.interest(id) });
+    },
   });
 }
 

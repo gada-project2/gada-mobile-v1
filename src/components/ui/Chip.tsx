@@ -10,6 +10,8 @@ export interface ChipProps {
   label: string;
   variant?: Variant;
   icon?: ReactNode;
+  /** Colour of the icon circle for `category` chips (defaults to the accent). */
+  circleColor?: string;
   /** Filter-chip selected state (affects `default` and `category`). */
   selected?: boolean;
   onPress?: () => void;
@@ -22,7 +24,7 @@ export interface ChipProps {
  * treatment for the Music/Business/Food/… selector rows; `default` is a plain
  * filter chip that highlights when `selected`.
  */
-export function Chip({ label, variant = "default", icon, selected, onPress, style }: ChipProps) {
+export function Chip({ label, variant = "default", icon, circleColor, selected, onPress, style }: ChipProps) {
   const theme = useTheme();
 
   // Resolve container + text colours per variant.
@@ -72,7 +74,7 @@ export function Chip({ label, variant = "default", icon, selected, onPress, styl
             borderRadius: 9999,
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: selected ? theme.accent.primary : theme.background.surface,
+            backgroundColor: circleColor ?? (selected ? theme.accent.primary : theme.background.surface),
           }}
         >
           {icon}

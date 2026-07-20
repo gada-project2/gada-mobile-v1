@@ -1,6 +1,7 @@
 import { ScrollView, View } from "react-native";
 
 import type { Gadaring } from "../../lib/api/types";
+import { useTheme } from "../../theme/ThemeProvider";
 import { Text } from "../ui";
 import { EventCard } from "./EventCard";
 import { EventCardSkeleton } from "./states";
@@ -8,17 +9,20 @@ import { EventCardSkeleton } from "./states";
 export interface TrendingCarouselProps {
   events: Gadaring[];
   loading: boolean;
+  /** Render themed EventCards (dark/light). Omit for the legacy emerald look. */
+  themed?: boolean;
 }
 
 const CARD_WIDTH = 260;
 
 /** Horizontal "Trending near you" carousel. Hides itself when empty + not loading. */
-export function TrendingCarousel({ events, loading }: TrendingCarouselProps) {
+export function TrendingCarousel({ events, loading, themed = false }: TrendingCarouselProps) {
+  const theme = useTheme();
   if (!loading && events.length === 0) return null;
 
   return (
     <View className="gap-3">
-      <Text weight="semibold" className="text-lg">
+      <Text weight="semibold" className="text-lg" style={themed && theme.mode === "dark" ? { color: theme.text.primary } : undefined}>
         Trending near you
       </Text>
       <ScrollView
@@ -34,7 +38,7 @@ export function TrendingCarousel({ events, loading }: TrendingCarouselProps) {
             ))
           : events.map((event) => (
               <View key={event.id} style={{ width: CARD_WIDTH }}>
-                <EventCard event={event} variant="compact" />
+                <EventCard event={event} variant="compact" themed={themed} />
               </View>
             ))}
       </ScrollView>
