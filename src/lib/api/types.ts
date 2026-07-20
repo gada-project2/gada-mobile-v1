@@ -171,6 +171,9 @@ export interface Gadaring {
   volunteerConfig?: VolunteerConfig | null;
   /** The current user's purchase for this event, if any (inline on the detail response). */
   myPurchase?: MyPurchase | null;
+  /** Host summary (inline on the detail response): id, displayName, photoKey.
+   *  No "verified" flag exists in the API — do not render a verified badge. */
+  convener?: { id: string; displayName?: string; photoKey?: string | null } | null;
   createdAt?: string;
   adminStatus?: "PENDING" | "APPROVED" | "REJECTED" | (string & {});
 }
