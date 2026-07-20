@@ -10,6 +10,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { useTheme } from "../../theme/ThemeProvider";
+import { primaryScale } from "../../theme/tokens";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -68,7 +69,7 @@ export function TabBarFab({ onPress, size = 56, accessibilityLabel = "Create eve
       ]}
     >
       <LinearGradient
-        colors={["#A78BFA", theme.accent.primary]}
+        colors={[primaryScale[400], theme.accent.primary]}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
         style={{

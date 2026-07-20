@@ -9,11 +9,14 @@ import type { Poll } from "../../lib/api/types";
 import { optionLabel, optionVotes } from "../../lib/chat-display";
 import { chatKeys } from "../../lib/queries/keys";
 import { usePollResults } from "../../lib/queries/chat";
+import { useTheme } from "../../theme/ThemeProvider";
 import { colors } from "../../theme/tokens";
 import { Button, Card, Text } from "../ui";
 
-export function PollCard({ poll }: { poll: Poll }) {
+export function PollCard({ poll, themed = false }: { poll: Poll; themed?: boolean }) {
   const queryClient = useQueryClient();
+  const theme = useTheme();
+  const dark = themed && theme.mode === "dark";
   const [voted, setVoted] = useState((poll.myResponse?.length ?? 0) > 0);
   const [selected, setSelected] = useState<string[]>(poll.myResponse ?? []);
   const [busy, setBusy] = useState(false);
@@ -49,11 +52,20 @@ export function PollCard({ poll }: { poll: Poll }) {
   const total =
     results.data?.totalVotes ?? resultOptions.reduce((n, o) => n + optionVotes(o), 0);
 
+  // Dark-mode surface/text overrides (visual only — selection accent stays the
+  // poll's volunteering blue in both themes).
+  const rowBg = dark ? theme.background.surfaceElevated : "#FFFFFF";
+  const rowBorderOff = dark ? theme.border : colors.hairlineStrong;
+  const trackBg = dark ? theme.background.surfaceElevated : "#FFFFFF";
+  const primaryText = dark ? { color: theme.text.primary } : undefined;
+  const mutedText = dark ? { color: theme.text.secondary } : undefined;
+  const faintText = dark ? { color: theme.text.tertiary } : undefined;
+
   return (
-    <Card className="gap-3 bg-volunteering-tint">
+    <Card themed={dark} className={dark ? undefined : "gap-3 bg-volunteering-tint"} style={dark ? { gap: 12 } : undefined}>
       <View className="flex-row items-center gap-2">
         <Text className="text-base">📊</Text>
-        <Text weight="semibold" className="flex-1 text-base">
+        <Text weight="semibold" className="flex-1 text-base" style={primaryText}>
           {poll.question}
         </Text>
       </View>
@@ -68,22 +80,22 @@ export function PollCard({ poll }: { poll: Poll }) {
                 onPress={() => toggle(o.id)}
                 accessibilityRole={poll.allowMultiple ? "checkbox" : "radio"}
                 accessibilityState={{ checked: on }}
-                className="flex-row items-center gap-2 rounded-md border bg-surface px-3 py-2.5"
-                style={{ borderColor: on ? colors.volunteering : colors.hairlineStrong }}
+                className="flex-row items-center gap-2 rounded-md border px-3 py-2.5"
+                style={{ borderColor: on ? colors.volunteering : rowBorderOff, backgroundColor: rowBg }}
               >
                 <View
                   className="h-5 w-5 items-center justify-center rounded-pill border"
-                  style={{ borderColor: on ? colors.volunteering : colors.hairlineStrong, backgroundColor: on ? colors.volunteering : "transparent" }}
+                  style={{ borderColor: on ? colors.volunteering : rowBorderOff, backgroundColor: on ? colors.volunteering : "transparent" }}
                 >
                   {on ? <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#FFFFFF" }} /> : null}
                 </View>
-                <Text className="flex-1">{optionLabel(o)}</Text>
+                <Text className="flex-1" style={primaryText}>{optionLabel(o)}</Text>
               </Pressable>
             );
           })}
-          <Button label="Vote" loading={busy} disabled={selected.length === 0} onPress={submit} />
+          <Button label="Vote" loading={busy} disabled={selected.length === 0} onPress={submit} themed={dark} />
           {poll.allowMultiple ? (
-            <Text tone="faint" className="text-xs">
+            <Text tone="faint" className="text-xs" style={faintText}>
               You can pick more than one.
             </Text>
           ) : null}
@@ -96,18 +108,18 @@ export function PollCard({ poll }: { poll: Poll }) {
             return (
               <View key={o.id} className="gap-1">
                 <View className="flex-row justify-between">
-                  <Text className="flex-1 text-sm">{optionLabel(o)}</Text>
-                  <Text tone="muted" className="text-sm">
+                  <Text className="flex-1 text-sm" style={primaryText}>{optionLabel(o)}</Text>
+                  <Text tone="muted" className="text-sm" style={mutedText}>
                     {pct}% · {votes}
                   </Text>
                 </View>
-                <View className="h-2 overflow-hidden rounded-pill bg-surface">
+                <View className="h-2 overflow-hidden rounded-pill" style={{ backgroundColor: trackBg }}>
                   <View style={{ width: `${pct}%`, height: "100%", backgroundColor: colors.volunteering }} />
                 </View>
               </View>
             );
           })}
-          <Text tone="faint" className="text-xs">
+          <Text tone="faint" className="text-xs" style={faintText}>
             {total} {total === 1 ? "vote" : "votes"} · you voted
           </Text>
         </>

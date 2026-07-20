@@ -47,6 +47,7 @@ function OverlayButton({
   onPress,
   label,
   active,
+  activeColor,
   top,
   side,
 }: {
@@ -54,6 +55,7 @@ function OverlayButton({
   onPress: () => void;
   label: string;
   active?: boolean;
+  activeColor?: string;
   top: number;
   side: { left: number } | { right: number };
 }) {
@@ -67,7 +69,7 @@ function OverlayButton({
       style={{ position: "absolute", top, ...side, zIndex: 10 }}
       className="h-10 w-10 items-center justify-center rounded-pill bg-black/40"
     >
-      <Ionicons name={icon} size={20} color={active ? "#FF6B6B" : "#FFFFFF"} />
+      <Ionicons name={icon} size={20} color={active ? (activeColor ?? "#FFFFFF") : "#FFFFFF"} />
     </Pressable>
   );
 }
@@ -180,6 +182,7 @@ export default function EventDetail() {
             <OverlayButton
               icon={isInterested ? "heart" : "heart-outline"}
               active={isInterested}
+              activeColor={theme.accent.secondary}
               onPress={() => {
                 Haptics.selectionAsync().catch(() => {});
                 toggleInterest.mutate(!isInterested);

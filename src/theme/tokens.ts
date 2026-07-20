@@ -59,13 +59,39 @@ export interface Theme {
     primary: string;
     surface: string;
     surfaceElevated: string;
+    /** dark only. */
+    hover?: string;
+    /** light only. */
+    divider?: string;
     /** [from, to] for gradient backgrounds (e.g. expo-linear-gradient). */
     gradient: readonly [string, string];
   };
   accent: { primary: string; primaryPressed: string; secondary: string };
-  text: { primary: string; secondary: string; tertiary: string; inverse: string };
+  /**
+   * `heading`/`body`/`secondary`/`disabled` are the spec's scale. `primary`
+   * (=heading), `tertiary` (=disabled) and `inverse` are retained back-compat
+   * aliases so existing consumers keep working.
+   */
+  text: {
+    heading: string;
+    body: string;
+    secondary: string;
+    disabled: string;
+    primary: string;
+    tertiary: string;
+    inverse: string;
+  };
   border: string;
-  status: { going: string; interested: string; success: string; error: string };
+  /** `danger` is the spec name; `error` is a retained alias. */
+  status: {
+    going: string;
+    interested: string;
+    success: string;
+    warning: string;
+    danger: string;
+    info: string;
+    error: string;
+  };
   overlay: string;
 }
 
@@ -107,24 +133,50 @@ export const radius = palette.radius as {
   full: number;
 };
 
-/** 8px spacing grid. */
+/** Full spacing scale (spec: "never use random spacing"). */
 export const spacing = palette.spacing as {
   xs: number;
   sm: number;
   md: number;
+  base: number;
   lg: number;
   xl: number;
   xxl: number;
+  xxxl: number;
+  huge: number;
+  massive: number;
+  giant: number;
 };
 
-/** Typography scale. Families map to the runtime-loaded Inter weights. */
+/** Additional spec exports (single-sourced from palette.js). */
+export const primaryScale = palette.primaryScale as Record<number, string>;
+export const secondaryColors = palette.secondary as Record<string, string>;
+export const categoryColors = palette.categoryColors as Record<string, string>;
+export const gradients = palette.gradients as Record<string, string[]>;
+export const shadow = palette.shadow as {
+  card: object;
+  floating: object;
+};
+export const layout = palette.layout as {
+  bottomNavHeight: number;
+  fabSize: number;
+  inputHeight: number;
+  inputRadius: number;
+  avatarSize: Record<string, number>;
+  iconSize: Record<string, number>;
+};
+
+/** Typography scale. Families map to the runtime-loaded Inter weights
+ *  (all five are loaded in app/_layout.tsx). */
 export const typography = {
   family: {
     regular: "Inter_400Regular",
     medium: "Inter_500Medium",
     semibold: "Inter_600SemiBold",
+    bold: "Inter_700Bold",
+    extrabold: "Inter_800ExtraBold",
   },
   size: { xs: 12, sm: 14, base: 16, lg: 18, xl: 20, "2xl": 24, "3xl": 30, "4xl": 36 },
   lineHeight: { xs: 16, sm: 20, base: 24, lg: 26, xl: 28, "2xl": 32, "3xl": 38, "4xl": 44 },
-  weight: { regular: "400", medium: "500", semibold: "600" },
+  weight: { regular: "400", medium: "500", semibold: "600", bold: "700", extrabold: "800" },
 } as const;

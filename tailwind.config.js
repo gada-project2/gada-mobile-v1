@@ -10,11 +10,17 @@ const flattenTheme = (t) => ({
   bg: t.background.primary,
   surface: t.background.surface,
   "surface-elevated": t.background.surfaceElevated,
+  hover: t.background.hover ?? t.background.surfaceElevated,
+  divider: t.background.divider ?? t.border,
   accent: t.accent.primary,
   "accent-pressed": t.accent.primaryPressed,
   "accent-secondary": t.accent.secondary,
+  // spec text scale + retained aliases
   text: t.text.primary,
+  "text-heading": t.text.heading,
+  "text-body": t.text.body,
   "text-secondary": t.text.secondary,
+  "text-disabled": t.text.disabled,
   "text-tertiary": t.text.tertiary,
   "text-inverse": t.text.inverse,
   border: t.border,
@@ -22,6 +28,9 @@ const flattenTheme = (t) => ({
   going: t.status.going,
   interested: t.status.interested,
   success: t.status.success,
+  warning: t.status.warning,
+  danger: t.status.danger,
+  info: t.status.info,
   error: t.status.error,
 });
 
@@ -72,6 +81,10 @@ module.exports = {
         // and `dark:bg-app-dark-surface` for dark, etc.
         app: flattenTheme(palette.light),
         "app-dark": flattenTheme(palette.dark),
+        // Theme-independent spec scales (single-sourced from palette.js).
+        primary: palette.primaryScale, // primary-100..900
+        secondary: palette.secondary, // secondary-pink / -orange / -gold / ...
+        category: palette.categoryColors, // category-MUSIC / -FOOD / ...
       },
       borderRadius: {
         sm: "8px",

@@ -2,9 +2,9 @@ import { Image } from "expo-image";
 import { Text, View, type ViewStyle } from "react-native";
 
 import { useTheme } from "../../theme/ThemeProvider";
-import { typography } from "../../theme/tokens";
+import { layout, typography } from "../../theme/tokens";
 
-type Size = "xs" | "sm" | "md" | "lg";
+type Size = "xs" | "sm" | "md" | "lg" | "xl";
 
 export interface AvatarProps {
   uri?: string | null;
@@ -16,12 +16,15 @@ export interface AvatarProps {
   style?: ViewStyle;
 }
 
-const DIM: Record<Size, number> = { xs: 24, sm: 32, md: 40, lg: 80 };
+// Diameters come straight from the spec's layout.avatarSize (24/32/40/56/72)
+// so they can't drift from the design system again.
+const DIM = layout.avatarSize as Record<Size, number>;
 const FONT: Record<Size, number> = {
   xs: typography.size.xs,
   sm: typography.size.sm,
   md: typography.size.base,
-  lg: typography.size["3xl"],
+  lg: typography.size["2xl"],
+  xl: typography.size["4xl"],
 };
 
 /**

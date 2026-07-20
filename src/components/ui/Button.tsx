@@ -9,7 +9,7 @@ import Animated, {
 
 import { cn } from "../../lib/cn";
 import { useTheme } from "../../theme/ThemeProvider";
-import { radius, typography } from "../../theme/tokens";
+import { colors, radius, typography } from "../../theme/tokens";
 import { Text } from "./Text";
 
 type Variant = "primary" | "secondary" | "ghost";
@@ -73,7 +73,7 @@ export function Button({
         {...props}
       >
         {loading ? (
-          <ActivityIndicator color={variant === "primary" ? "#FFFFFF" : "#0E9F6E"} />
+          <ActivityIndicator color={variant === "primary" ? "#FFFFFF" : colors.brand} />
         ) : (
           <Text weight="semibold" tone={variantText[variant]}>
             {label}
