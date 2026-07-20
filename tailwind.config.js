@@ -1,8 +1,36 @@
 /** @type {import('tailwindcss').Config} */
 // NativeWind v4 uses Tailwind CSS v3's config model (theme.extend + tailwind.config.js).
+
+// New themeable design system — SAME SOURCE as src/theme/tokens.ts (they both
+// consume ./src/theme/palette.js), so `useTheme()` and these className
+// utilities can never drift. Namespaced `app-*` / `app-dark-*` to avoid
+// colliding with the current emerald tokens (surface, ink, brand, …).
+const palette = require("./src/theme/palette");
+const flattenTheme = (t) => ({
+  bg: t.background.primary,
+  surface: t.background.surface,
+  "surface-elevated": t.background.surfaceElevated,
+  accent: t.accent.primary,
+  "accent-pressed": t.accent.primaryPressed,
+  "accent-secondary": t.accent.secondary,
+  text: t.text.primary,
+  "text-secondary": t.text.secondary,
+  "text-tertiary": t.text.tertiary,
+  "text-inverse": t.text.inverse,
+  border: t.border,
+  overlay: t.overlay,
+  going: t.status.going,
+  interested: t.status.interested,
+  success: t.status.success,
+  error: t.status.error,
+});
+
 module.exports = {
   content: ["./app/**/*.{js,jsx,ts,tsx}", "./src/**/*.{js,jsx,ts,tsx}"],
   presets: [require("nativewind/preset")],
+  // Class-based dark mode; the ThemeProvider drives it via NativeWind's
+  // colorScheme.set(), so `dark:` variants follow the user's theme choice.
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
@@ -40,11 +68,16 @@ module.exports = {
           ink: "#185FA5",
           tint: "#E6F1FB",
         },
+        // New themeable system (see palette.js). Use `bg-app-surface` for light
+        // and `dark:bg-app-dark-surface` for dark, etc.
+        app: flattenTheme(palette.light),
+        "app-dark": flattenTheme(palette.dark),
       },
       borderRadius: {
         sm: "8px",
         md: "12px",
         lg: "16px",
+        xl: "20px",
         btn: "11px",
         pill: "9999px",
       },

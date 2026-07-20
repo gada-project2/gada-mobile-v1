@@ -18,7 +18,9 @@ import { useAuth } from "../../src/lib/auth/AuthContext";
 import { accountKeys, safetyKeys } from "../../src/lib/queries/keys";
 import { usePrivacy, useVolunteerProfile } from "../../src/lib/queries/account";
 import { useIceContacts } from "../../src/lib/queries/safety";
-import { colors } from "../../src/theme/tokens";
+import { cn } from "../../src/lib/cn";
+import { useThemeControls } from "../../src/theme/ThemeProvider";
+import { colors, type ThemeMode } from "../../src/theme/tokens";
 
 const MAX_ICE = 3;
 
@@ -166,6 +168,19 @@ export default function Settings() {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 48, gap: 24 }}>
+        {/* Appearance */}
+        <View className="gap-3">
+          <Text weight="semibold" className="text-lg">
+            Appearance
+          </Text>
+          <Card className="gap-3">
+            <Text tone="muted" className="text-sm">
+              Choose how gada looks. System follows your device setting.
+            </Text>
+            <ThemeToggle />
+          </Card>
+        </View>
+
         {/* ICE contacts */}
         <View className="gap-3">
           <View className="flex-row items-center justify-between">
@@ -281,6 +296,43 @@ export default function Settings() {
       {/* Delete account — typed confirmation */}
       <DeleteAccountSheet sheetRef={deleteRef} loading={busy === "delete"} onConfirm={doDelete} />
     </SafeAreaView>
+  );
+}
+
+function ThemeToggle() {
+  const { mode, setMode } = useThemeControls();
+  const options: { key: ThemeMode; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+    { key: "system", label: "System", icon: "phone-portrait-outline" },
+    { key: "light", label: "Light", icon: "sunny-outline" },
+    { key: "dark", label: "Dark", icon: "moon-outline" },
+  ];
+  return (
+    <View className="flex-row gap-2">
+      {options.map((o) => {
+        const active = mode === o.key;
+        return (
+          <Pressable
+            key={o.key}
+            onPress={() => {
+              Haptics.selectionAsync().catch(() => {});
+              setMode(o.key);
+            }}
+            accessibilityRole="button"
+            accessibilityState={{ selected: active }}
+            accessibilityLabel={`${o.label} theme`}
+            className={cn(
+              "flex-1 items-center gap-1 rounded-md border px-3 py-3",
+              active ? "border-brand bg-brand-tint" : "border-hairline-strong bg-surface",
+            )}
+          >
+            <Ionicons name={o.icon} size={20} color={active ? colors.brand : colors.muted} />
+            <Text weight="medium" className="text-sm" style={{ color: active ? colors.brandInk : colors.ink }}>
+              {o.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
   );
 }
 

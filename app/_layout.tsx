@@ -20,6 +20,7 @@ import { CalendarOverlay } from "../src/components/app/CalendarOverlay";
 import { AuthProvider, useAuth } from "../src/lib/auth/AuthContext";
 import { SafetyProvider } from "../src/lib/safety/SafetyContext";
 import { queryClient } from "../src/lib/query";
+import { ThemeProvider } from "../src/theme/ThemeProvider";
 
 // Hold the native splash until fonts AND session bootstrap have resolved.
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -80,14 +81,16 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
-          <BottomSheetModalProvider>
-            <AuthProvider>
-              <StatusBar style="dark" />
-              <RootNavigator fontsLoaded={fontsLoaded} />
-            </AuthProvider>
-          </BottomSheetModalProvider>
-        </QueryClientProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <BottomSheetModalProvider>
+              <AuthProvider>
+                <StatusBar style="dark" />
+                <RootNavigator fontsLoaded={fontsLoaded} />
+              </AuthProvider>
+            </BottomSheetModalProvider>
+          </QueryClientProvider>
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
