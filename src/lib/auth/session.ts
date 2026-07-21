@@ -2,27 +2,26 @@ import * as SecureStore from "expo-secure-store";
 
 import { apiFetch } from "../api/client";
 import type { CurrentUser, Tokens } from "../api/types";
+import { getAccessToken, setAccessToken, setRefreshHandler } from "./token-store";
 
 // Security model (differs from web — see CLAUDE.md):
 //   • Refresh token  -> expo-secure-store (iOS Keychain / Android Keystore).
-//   • Access token   -> in-memory only (this module-level variable). NEVER persisted.
+//   • Access token   -> in-memory only (token-store.ts). NEVER persisted.
 //   • NEVER AsyncStorage. NEVER log a token.
+// The access token lives in token-store.ts (a leaf module) so the API client
+// can read it without importing this file — see token-store.ts for why.
 
 const REFRESH_TOKEN_KEY = "gada.refreshToken";
-
-let accessToken: string | null = null;
 
 // Single-flight guard: concurrent 401s share one in-flight refresh.
 let refreshInFlight: Promise<string | null> | null = null;
 
-/** The in-memory access token, or null. Read by the API client per request. */
-export function getAccessToken(): string | null {
-  return accessToken;
-}
+// Re-exported so existing importers of `session.getAccessToken` keep working.
+export { getAccessToken };
 
 /** Persist a freshly-issued token pair: refresh -> secure store, access -> memory. */
 export async function setSession(tokens: Tokens): Promise<void> {
-  accessToken = tokens.accessToken;
+  setAccessToken(tokens.accessToken);
   await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, tokens.refreshToken);
 }
 
@@ -47,7 +46,7 @@ export async function clearSession(opts: { revoke?: boolean } = {}): Promise<voi
     }
   }
 
-  accessToken = null;
+  setAccessToken(null);
   refreshInFlight = null;
   try {
     await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
@@ -80,7 +79,7 @@ export function refreshSession(): Promise<string | null> {
       });
 
       await setSession(tokens);
-      return accessToken;
+      return getAccessToken();
     } catch {
       await clearSession();
       return null;
@@ -118,3 +117,7 @@ export async function bootstrapSession(): Promise<CurrentUser | null> {
   if (!token) return null;
   return getCurrentUser();
 }
+
+// Register the refresh with the leaf token-store so the API client can trigger
+// a 401 refresh without importing this module (breaks the require cycle).
+setRefreshHandler(refreshSession);

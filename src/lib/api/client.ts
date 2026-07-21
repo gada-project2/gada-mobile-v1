@@ -1,4 +1,4 @@
-import { getAccessToken, refreshSession } from "../auth/session";
+import { getAccessToken, runRefresh } from "../auth/token-store";
 import type { ApiEnvelope, ApiList, ApiListMeta } from "./types";
 
 const API_BASE = process.env.EXPO_PUBLIC_GADA_API_BASE;
@@ -88,7 +88,7 @@ async function requestEnvelope<T>(
   // refresh-on-401: single retry. refreshSession() is single-flight, so
   // concurrent 401s trigger only one network refresh.
   if (res.status === 401 && !opts.skipAuthRefresh && !isRetry) {
-    const newToken = await refreshSession();
+    const newToken = await runRefresh();
     if (newToken) {
       return requestEnvelope<T>(path, opts, true);
     }

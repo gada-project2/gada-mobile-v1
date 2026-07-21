@@ -394,7 +394,9 @@ export interface DirectThread {
   name?: string;
   displayName?: string;
   avatarUrl?: string | null;
-  lastMessage?: string;
+  /** The API returns this as a plain string OR a full message object — read it
+   *  via `threadPreview()`, never render it directly. */
+  lastMessage?: string | ChatMessage;
   lastMessageAt?: string;
   unreadCount?: number;
 }

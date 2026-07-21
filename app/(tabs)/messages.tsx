@@ -8,7 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { EmptyState, ErrorState } from "../../src/components/app/states";
 import { Avatar, Card, Text } from "../../src/components/ui";
 import type { Circle, DirectThread } from "../../src/lib/api/types";
-import { threadName } from "../../src/lib/chat-display";
+import { threadName, threadPreview } from "../../src/lib/chat-display";
 import { useResolvedMedia } from "../../src/lib/queries/storage";
 import { useDirectThreads } from "../../src/lib/queries/chat";
 import { useCircles } from "../../src/lib/queries/circles";
@@ -115,7 +115,7 @@ export default function Messages() {
                   avatarRef={t.avatarUrl}
                   fallbackIcon="person-circle-outline"
                   name={threadName(t)}
-                  preview={t.lastMessage}
+                  preview={threadPreview(t)}
                   timeIso={t.lastMessageAt}
                   unread={t.unreadCount}
                   onPress={() =>
